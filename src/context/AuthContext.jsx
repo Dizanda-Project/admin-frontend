@@ -10,11 +10,19 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
-    const request = token ? authApi.me() : Promise.reject(new Error('no session token'));
-    request
-      .then((data) => setAdmin(data.admin))
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    authApi
+      .me()
+      .then((data) => {
+        if (data?.admin) setAdmin(data.admin);
+        else localStorage.removeItem(TOKEN_KEY);
+      })
       .catch(() => {
-        if (token) localStorage.removeItem(TOKEN_KEY);
+        // Token is invalid or expired — clear it
+        localStorage.removeItem(TOKEN_KEY);
       })
       .finally(() => setLoading(false));
   }, []);

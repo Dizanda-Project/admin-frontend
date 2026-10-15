@@ -32,18 +32,28 @@ export default function Dashboard() {
   const [recentOrders, setRecentOrders] = useState(null);
 
   useEffect(() => {
-    Promise.all([homeApi.get(), aboutApi.get(), galleryApi.get(), ordersApi.list()]).then(
-      ([home, about, gallery, orders]) => {
+    Promise.all([homeApi.get(), aboutApi.get(), galleryApi.get(), ordersApi.list()])
+      .then(([home, about, gallery, orders]) => {
         setStats({
-          featuredProducts: home.featuredProducts.length,
-          teamMembers: about.team.length,
-          galleryCategories: gallery.categories.length,
-          galleryItems: gallery.items.length,
-          newOrders: orders.filter((o) => o.status === 'new').length,
+          featuredProducts: home?.featuredProducts?.length || 0,
+          teamMembers: about?.team?.length || 0,
+          galleryCategories: gallery?.categories?.length || 0,
+          galleryItems: gallery?.items?.length || 0,
+          newOrders: orders?.filter?.((o) => o.status === 'new')?.length || 0,
         });
-        setRecentOrders(orders.slice(0, 5));
-      },
-    );
+        setRecentOrders(Array.isArray(orders) ? orders.slice(0, 5) : []);
+      })
+      .catch((err) => {
+        console.warn('Dashboard data fetch failed (preview mode):', err);
+        setStats({
+          featuredProducts: 0,
+          teamMembers: 0,
+          galleryCategories: 0,
+          galleryItems: 0,
+          newOrders: 0,
+        });
+        setRecentOrders([]);
+      });
   }, []);
 
   useEffect(() => {
